@@ -190,4 +190,14 @@ export const registerSystemSettings = function() {
     type: Boolean,
     default: false
   });
+
+  // Critical Exploding Dice
+  game.settings.register("dnd5e", "criticalExplodingDice", {
+    name: "SETTINGS.5eCriticalExplodingDiceN",
+    hint: "SETTINGS.5eCriticalExplodingDiceL",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false
+  });
 };

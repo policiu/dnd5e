@@ -326,7 +326,8 @@ export async function damageRoll({
   critical=false, criticalBonusDice, criticalMultiplier, multiplyNumeric, powerfulCritical,
   criticalBonusDamage, // Damage customization
   fastForward=false, event, allowCritical=true, template, title, dialogOptions, // Dialog configuration
-  chatMessage=true, messageData={}, rollMode, speaker, flavor // Chat Message customization
+  chatMessage=true, messageData={}, rollMode, speaker, flavor, // Chat Message customization
+  criticalExplodingDice
 }={}) {
 
   // Handle input arguments
@@ -343,7 +344,8 @@ export async function damageRoll({
     criticalMultiplier,
     criticalBonusDamage,
     multiplyNumeric: multiplyNumeric ?? game.settings.get("dnd5e", "criticalDamageModifiers"),
-    powerfulCritical: powerfulCritical ?? game.settings.get("dnd5e", "criticalDamageMaxDice")
+    powerfulCritical: powerfulCritical ?? game.settings.get("dnd5e", "criticalDamageMaxDice"),
+    criticalExplodingDice: criticalExplodingDice ?? game.settings.get("dnd5e", "criticalExplodingDice")
   });
 
   // Prompt a Dialog to further configure the DamageRoll

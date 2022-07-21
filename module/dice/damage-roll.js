@@ -8,6 +8,7 @@
  * @param {boolean} [options.multiplyNumeric=false]   Multiply numeric terms by the critical multiplier
  * @param {boolean} [options.powerfulCritical=false]  Apply the "powerful criticals" house rule to critical hits
  * @param {string} [options.criticalBonusDamage]      An extra damage term that is applied only on a critical hit
+ * @param {boolean} [options.criticalExplodingDice]   Explode dice on critical hit (Reroll if dice is max)
  * @extends {Roll}
  */
 export default class DamageRoll extends Roll {
@@ -110,15 +111,17 @@ export default class DamageRoll extends Roll {
     return super.toMessage(messageData, options);
   }
 
-  /** @inheritdoc */
-  async evaluate(...options)
-  {
-    const rollResult = await super.evaluate(...options);
-    console.log(rollResult);
-    console.log("HELLO");
+  /* -------------------------------------------- */
 
-    for (const [i, term] of this.terms.entries())
+  /**
+   * Checks dice results and applies exploding crit calculations
+   * @private
+   */
+  async evaluateExplodingDice()
+  {
+    for (const term of this.terms)
     {
+      // Don't allow 1d1 which would have infinite exploding dice
       if (!(term instanceof DiceTerm) || term.faces <= 1)
       {
         continue;
@@ -126,19 +129,34 @@ export default class DamageRoll extends Roll {
 
       for (let i = 0; i < term.results.length; i++)
       {
-        // Let's not 
         if (term.results[i].active && term.results[i].result === term.faces)
         {
-          const explodingDice = new Roll("1d"+term.faces);
+          const explodingDice = new Roll(`1d${term.faces}`);
           const explodingResult = await explodingDice.evaluate();
-          term.results.push({active: true, result: explodingResult.total});
+
+          // Keep self up-to-date
+          term.results.push({result: explodingResult.total, active: true});
           term.number += 1;
+          this._total += explodingResult.total;
         }
       }
     }
+  }
+
+
+  /** @inheritdoc */
+  async evaluate(...options)
+  {
+    // Handle Exploding Dice
+    const rollResult = await super.evaluate(...options);
+
+    // Evaluate returns itself, so we can safely just modify ourself, probably
+    if (this.isCritical && this.options.criticalExplodingDice)
+    {
+      await this.evaluateExplodingDice();
+    }
 
     return rollResult;
-
   }
 
   /* -------------------------------------------- */
