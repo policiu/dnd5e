@@ -110,6 +110,37 @@ export default class DamageRoll extends Roll {
     return super.toMessage(messageData, options);
   }
 
+  /** @inheritdoc */
+  async evaluate(...options)
+  {
+    const rollResult = await super.evaluate(...options);
+    console.log(rollResult);
+    console.log("HELLO");
+
+    for (const [i, term] of this.terms.entries())
+    {
+      if (!(term instanceof DiceTerm) || term.faces <= 1)
+      {
+        continue;
+      }
+
+      for (let i = 0; i < term.results.length; i++)
+      {
+        // Let's not 
+        if (term.results[i].active && term.results[i].result === term.faces)
+        {
+          const explodingDice = new Roll("1d"+term.faces);
+          const explodingResult = await explodingDice.evaluate();
+          term.results.push({active: true, result: explodingResult.total});
+          term.number += 1;
+        }
+      }
+    }
+
+    return rollResult;
+
+  }
+
   /* -------------------------------------------- */
   /*  Configuration Dialog                        */
   /* -------------------------------------------- */
